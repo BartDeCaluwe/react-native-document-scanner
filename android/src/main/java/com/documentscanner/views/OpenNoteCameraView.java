@@ -650,27 +650,38 @@ public class OpenNoteCameraView extends JavaCameraView implements PictureCallbac
 
     public String saveToDirectory(Mat doc) {
         String fileName;
+        String currentPhotoPath;
         boolean isIntent = false;
         Uri fileUri = null;
-        String folderName = "documents";
-        File folder = new File(Environment.getExternalStorageDirectory().toString() + "/" + folderName);
-        if (!folder.exists()) {
-            folder.mkdirs();
-            Log.d(TAG, "wrote: created folder " + folder.getPath());
+        String uuid = UUID.randomUUID().toString();
+
+        try {
+            File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            File image = File.createTempFile(
+                uuid,       /* prefix */
+                ".jpg",     /* suffix */
+                storageDir  /* directory */
+            );
+
+            Mat endDoc = new Mat(
+                Double.valueOf(doc.size().width).intValue(),
+                Double.valueOf(doc.size().height).intValue(),
+                CvType.CV_8UC4
+            );
+
+            Core.flip(doc.t(), endDoc, 1);
+
+            currentPhotoPath = image.getAbsolutePath();
+
+            Imgcodecs.imwrite(currentPhotoPath, endDoc);
+            endDoc.release();
+
+            return currentPhotoPath;
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return null;
         }
-        fileName = Environment.getExternalStorageDirectory().toString() + "/" + folderName + "/" + UUID.randomUUID()
-                + ".jpg";
-
-        Mat endDoc = new Mat(Double.valueOf(doc.size().width).intValue(), Double.valueOf(doc.size().height).intValue(),
-                CvType.CV_8UC4);
-
-        Core.flip(doc.t(), endDoc, 1);
-
-        Imgcodecs.imwrite(fileName, endDoc);
-
-        endDoc.release();
-
-        return fileName;
     }
 
     public void saveDocument(ScannedDocument scannedDocument) {

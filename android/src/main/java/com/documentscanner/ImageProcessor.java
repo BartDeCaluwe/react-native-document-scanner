@@ -409,7 +409,10 @@ public class ImageProcessor extends Handler {
     }
 
     private void enhanceDocument(Mat src) {
-        Imgproc.cvtColor(src, src, Imgproc.COLOR_RGBA2GRAY);
+        if (!this.noGrayscale) {
+            Imgproc.cvtColor(src, src, Imgproc.COLOR_RGBA2GRAY);
+        }
+
         src.convertTo(src, CvType.CV_8UC1, colorGain, colorBias);
     }
 
